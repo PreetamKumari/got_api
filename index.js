@@ -25,16 +25,16 @@ connectToDb((err) => {
 
 app.get('/api/characters', (req, res) => {
 	//search by name
-	const name = req.query.name
-	const house = req.query.house
+	const fullName = req.query.fullName
+	const family = req.query.family
 	//pagination
 	const page = req.query.page || INITIAL_PAGE
 	let characters = []
 	db.collection('characters')
 	.find({
 		$and: [
-			{name: new RegExp(name, 'i')},
-			{house: new RegExp(house, 'i')}
+			{fullName: new RegExp(fullName, 'i')},
+			{family: new RegExp(family, 'i')}
 		]
 	})
 	.skip(page * CHARACTERS_PER_PAGE)
@@ -82,7 +82,7 @@ app.get('/api/quotes', (req, res) => {
 	const name = req.query.author
 	const quotes = []
 	db.collection('quotes')
-	.find({author: name})
+	.find({"character.author": new RegExp(name, 'i')})
 	.forEach((quote) => quotes.push(quote))
 	.then(() => {
 		res.status(200).json(quotes)
@@ -100,7 +100,7 @@ app.get('/api/quotes/random', (req, res) => {
 	db.collection('quotes')
 	.aggregate(
 		[ 
-			{ $match: {author: new RegExp(name, 'i')} },
+			{ $match: {"character.author": new RegExp(name, 'i')} },
 			{ $sample: { size: 1 } } 
 		]
 	 )
